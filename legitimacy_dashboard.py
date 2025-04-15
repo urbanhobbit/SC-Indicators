@@ -51,7 +51,7 @@ st.markdown("""
 
 logo_html = """
     <div style='display: flex; align-items: center;'>
-        <img src='https://github.com/urbanhobbit/CS-Index-01/raw/main/Logo%20CO3.png' width='160' style='margin-right: 25px;'>
+        <img src='https://github.com/urbanhobbit/CS-Index-01/raw/main/Logo%20CO3.png' width='220' style='margin-right: 25px;'>
         <div>
             <h1 style='color:#14213D; margin-bottom: 0;'>Social Contract Indicators Dashboard</h1>
             <p style='color:#FCA311; font-size: 1.1rem; margin-top: 0; font-weight: 600;'>CO3 – Resilient Social Contracts for Democratic Societies</p>
@@ -61,28 +61,13 @@ logo_html = """
 st.markdown(logo_html, unsafe_allow_html=True)
 
 
-st.markdown("""
-    <style>
-        html, body, [class*="css"]  {
-            font-family: 'Open Sans', sans-serif;
-        }
-        .block-container {
-            padding-top: 2rem;
-        }
-        .stRadio > label {
-            color: #14213D;
-            font-weight: 600;
-        }
-        h1, h2, h3, h4 {
-            color: #14213D;
-        }
-    </style>
-""", unsafe_allow_html=True)
+
 
 
 
 
 # Load the dataset directly
+metadata_df = pd.read_excel("Metadata.xlsx")
 df_raw = pd.read_excel("SC Indicators Data Prep.xlsx", sheet_name=0, header=None)
 
 domain_row = df_raw.iloc[0]
@@ -102,7 +87,9 @@ hierarchy = pd.DataFrame({
 })
 
 
+
 # Sidebar Filters
+
 st.sidebar.header("Filter Structure")
 with st.sidebar.expander("Display Options", expanded=True):
     all_domains = hierarchy["Domain"].unique()
@@ -203,7 +190,7 @@ view_option = st.markdown("""
     <hr style='margin-top: 1rem; margin-bottom: 1rem;'>
     <h3 style='font-weight: 600;'>Explore Dashboard Sections</h3>
 """, unsafe_allow_html=True)
-view_option = st.radio("Select view:", ["Tables", "Bar Charts", "Map", "Scatter Plot", "Radar Chart", "Indicator Charts"], horizontal=True)
+view_option = st.radio("Select view:", ["Tables", "Bar Charts", "Map", "Scatter Plot", "Radar Chart", "Indicator Charts", "Metadata"], horizontal=True)
 
 if view_option == "Tables":
     st.subheader("Composite Indices by Subdomain")
@@ -369,6 +356,21 @@ elif view_option == "Indicator Charts":
     fig_ind.update_layout(yaxis_tickfont=dict(size=11), height=800)
     fig_ind.update_traces(textposition="auto")
     st.plotly_chart(fig_ind, use_container_width=True)
+
+elif view_option == "Metadata":
+    st.subheader("Indicator Metadata Library")
+    domain_filter = st.selectbox("Filter by Domain", metadata_df['Domain'].unique())
+    sub_filtered = metadata_df[metadata_df['Domain'] == domain_filter]
+    subdomain_filter = st.selectbox("Filter by Subdomain", sub_filtered['Subdomain'].unique())
+    final_filtered = sub_filtered[sub_filtered['Subdomain'] == subdomain_filter]
+    indicator_filter = st.selectbox("Select an Indicator", final_filtered['Indicator'].unique())
+    meta = final_filtered[final_filtered['Indicator'] == indicator_filter].iloc[0]
+    st.markdown(f"**Domain:** {meta['Domain']}")
+    st.markdown(f"**Subdomain:** {meta['Subdomain']}")
+    st.markdown(f"**Source:** [{meta['Source']}]({meta['Link']}) ({meta['Date']})")
+    st.markdown(f"**Response Scale:** {meta['Response Scale']}")
+    st.markdown(f"**Question:**\n> {meta['Question']}")
+st.markdown(f"[Open Source Link]({meta['Link']})")
 
 
 
